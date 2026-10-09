@@ -123,9 +123,9 @@
     },
     {
       "id": 4,
-      "title": "Reconciliação p95 (5m)",
+      "title": "Reconciliação p95 — controller (5m)",
       "type": "stat",
-      "description": "Duração do reconciliador. Não é lead time.",
+      "description": "Histograma agregado por namespace e destino no Argo CD v3.5.1. Não é o tempo de entrega de uma versão da loja.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"

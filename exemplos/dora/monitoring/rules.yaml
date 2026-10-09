@@ -14,7 +14,8 @@ groups:
       - record: lab:argocd_sync_failure_ratio:5m
         expr: lab:argocd_syncs_failed:5m / (lab:argocd_syncs_finished:5m > 0)
       - record: lab:argocd_reconcile_p95_seconds:5m
-        expr: histogram_quantile(0.95, sum by (le, namespace, name, project) (rate(argocd_app_reconcile_bucket{project="dora-lab",name="loja-prod"}[5m])))
+        # Nesta versão, o histograma é agregado por namespace/destino.
+        expr: histogram_quantile(0.95, sum by (le, namespace, dest_server) (rate(argocd_app_reconcile_bucket{namespace="argocd",dest_server="https://kubernetes.default.svc"}[5m])))
       # 0 = Healthy; 1 = outro estado observado. Série ausente continua ausente.
       - record: lab:argocd_not_healthy
         expr: |

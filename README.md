@@ -36,8 +36,8 @@ em `application.yaml`.
 | --- | --- | --- |
 | Sucesso | valores iniciais | Healthy e HTTP 200 |
 | Falha do checkout | `broken: true` | Sync Succeeded, Healthy e HTTP 503 |
-| Rejeição antes do deploy | `failSync: true` | Sync Failed; versão anterior continua atendendo |
-| Falha do rollout | `imageTag: nao-existe` | Progressing → Degraded; pod novo não inicia e o antigo continua atendendo |
+| Rejeição antes do deploy | `failSync: true` | Sync Failed, Healthy; versão anterior continua atendendo |
+| Falha do rollout | `imageTag: nao-existe` | Sync Succeeded, Progressing → Degraded; pod novo não inicia e o antigo continua atendendo |
 | Recuperação | restaurar valores iniciais | Healthy e HTTP 200 |
 | Repetição | Sync do mesmo commit | contador aumenta sem uma nova versão |
 
@@ -70,7 +70,7 @@ Reabra o port-forward da aplicação se o pod escolhido tiver sido substituído.
 ## Métricas
 
 - `argocd_app_sync_total`: operações de sync, inclusive repetições.
-- `argocd_app_reconcile_*`: duração da reconciliação.
+- `argocd_app_reconcile_*`: duração da reconciliação, agregada por namespace/destino nesta versão.
 - `argocd_app_info`: health e sync status da Application.
 
 O dashboard mostra contadores, falhas de sync, p95 de reconciliação, histórico
