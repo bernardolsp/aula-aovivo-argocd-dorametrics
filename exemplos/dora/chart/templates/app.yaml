@@ -4,6 +4,7 @@ metadata:
   name: loja
 spec:
   replicas: 1
+  progressDeadlineSeconds: 30
   selector:
     matchLabels:
       app: loja
@@ -16,7 +17,7 @@ spec:
     spec:
       containers:
         - name: loja
-          image: nginx:1.28.0-alpine
+          image: nginx:{{ .Values.imageTag }}
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - name: config

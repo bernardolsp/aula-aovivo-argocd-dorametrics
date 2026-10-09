@@ -1,9 +1,9 @@
 {
   "uid": "argocd-dora-lab",
-  "title": "Argo CD e DORA — LinuxTips",
+  "title": "Argo CD — Métricas de operação",
   "tags": [
     "argocd",
-    "dora",
+    "prometheus",
     "linuxtips"
   ],
   "timezone": "browser",
@@ -28,7 +28,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "Operação do reconciliador. Um sync Succeeded pode ser re-sync ou correção de drift. Reconciliação não mede commit → produção. Esses painéis não são, por si só, DORA."
+        "content": "Syncs, reconciliação e estado da Application observados pelo Argo CD. Compare estes sinais com o HTTP do serviço durante os cenários."
       }
     },
     {
@@ -51,7 +51,7 @@
           "refId": "A",
           "expr": "sum(argocd_app_sync_total{project=\"dora-lab\",name=\"loja-prod\",phase=\"Succeeded\",dry_run=\"false\"})",
           "instant": true,
-          "legendFormat": "{{name}}{{service}}"
+          "legendFormat": "{{name}}"
         }
       ],
       "fieldConfig": {
@@ -96,7 +96,7 @@
           "refId": "A",
           "expr": "avg(lab:argocd_sync_failure_ratio:5m)",
           "instant": true,
-          "legendFormat": "{{name}}{{service}}"
+          "legendFormat": "{{name}}"
         }
       ],
       "fieldConfig": {
@@ -141,7 +141,7 @@
           "refId": "A",
           "expr": "max(lab:argocd_reconcile_p95_seconds:5m)",
           "instant": true,
-          "legendFormat": "{{name}}{{service}}"
+          "legendFormat": "{{name}}"
         }
       ],
       "fieldConfig": {
@@ -168,7 +168,7 @@
     },
     {
       "id": 5,
-      "title": "Argo considera loja-prod Healthy?",
+      "title": "Application fora de Healthy? (0/1)",
       "type": "stat",
       "description": "1 = Healthy. Observe que a versão broken ainda responde HTTP 503.",
       "datasource": {
@@ -184,9 +184,9 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(argocd_app_info{project=\"dora-lab\",name=\"loja-prod\",health_status=\"Healthy\"} == 1) or vector(0)",
+          "expr": "lab:argocd_not_healthy",
           "instant": true,
-          "legendFormat": "{{name}}{{service}}"
+          "legendFormat": "{{name}}"
         }
       ],
       "fieldConfig": {
@@ -231,7 +231,7 @@
           "refId": "A",
           "expr": "lab:argocd_syncs_succeeded:5m",
           "instant": false,
-          "legendFormat": "{{name}}{{service}}"
+          "legendFormat": "{{name}}"
         }
       ],
       "fieldConfig": {
@@ -293,319 +293,32 @@
     },
     {
       "id": 8,
-      "title": "DORA — dados SINTÉTICOS enviados via curl",
-      "type": "text",
+      "title": "Estado da Application observado pelo Argo",
+      "type": "timeseries",
       "gridPos": {
         "x": 0,
         "y": 15,
-        "w": 24,
-        "h": 3
-      },
-      "options": {
-        "mode": "markdown",
-        "content": "Coorte didática de 3 entregas. Os valores abaixo vêm dos arquivos .prom, não da coleta do Argo. Em produção, Git/CI e eventos de entrega/incidente precisariam alimentar uma integração com identidade, timestamps e correlação."
-      }
-    },
-    {
-      "id": 9,
-      "title": "Deploys da coorte sintética",
-      "type": "stat",
-      "description": "",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "gridPos": {
-        "x": 0,
-        "y": 18,
-        "w": 6,
-        "h": 5
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "dora_deployments_total{origin=\"synthetic\"}",
-          "instant": true,
-          "legendFormat": "{{name}}{{service}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "noValue": "Sem observações",
-          "color": {
-            "mode": "palette-classic"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "value",
-        "graphMode": "none"
-      }
-    },
-    {
-      "id": 10,
-      "title": "Change fail rate — sintético",
-      "type": "stat",
-      "description": "Deploys que exigem intervenção / entregas da mesma coorte.",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "gridPos": {
-        "x": 6,
-        "y": 18,
-        "w": 6,
-        "h": 5
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "lab:dora_change_fail_ratio",
-          "instant": true,
-          "legendFormat": "{{name}}{{service}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percentunit",
-          "noValue": "Sem observações",
-          "color": {
-            "mode": "palette-classic"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "value",
-        "graphMode": "none"
-      }
-    },
-    {
-      "id": 11,
-      "title": "Lead time médio — sintético",
-      "type": "stat",
-      "description": "Soma dos tempos commit → produção / quantidade de mudanças (1 por entrega nesta demo).",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "gridPos": {
-        "x": 12,
-        "y": 18,
-        "w": 6,
-        "h": 5
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "lab:dora_lead_time_mean_seconds",
-          "instant": true,
-          "legendFormat": "{{name}}{{service}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "s",
-          "noValue": "Sem observações",
-          "color": {
-            "mode": "palette-classic"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "value",
-        "graphMode": "none"
-      }
-    },
-    {
-      "id": 12,
-      "title": "Recuperação média — sintética",
-      "type": "stat",
-      "description": "Somente recuperação de falhas de deploy; sem incidentes encerrados, sem observações.",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "gridPos": {
-        "x": 18,
-        "y": 18,
-        "w": 6,
-        "h": 5
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "lab:dora_recovery_mean_seconds",
-          "instant": true,
-          "legendFormat": "{{name}}{{service}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "s",
-          "noValue": "Sem observações",
-          "color": {
-            "mode": "palette-classic"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "value",
-        "graphMode": "none"
-      }
-    },
-    {
-      "id": 13,
-      "title": "Deployment rework rate — sintético",
-      "type": "stat",
-      "description": "Entregas não planejadas para corrigir incidente / entregas da mesma coorte.",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "gridPos": {
-        "x": 0,
-        "y": 23,
-        "w": 6,
-        "h": 5
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "lab:dora_rework_ratio",
-          "instant": true,
-          "legendFormat": "{{name}}{{service}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percentunit",
-          "noValue": "Sem observações",
-          "color": {
-            "mode": "palette-classic"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "value",
-        "graphMode": "none"
-      }
-    },
-    {
-      "id": 14,
-      "title": "Incidentes abertos — sintético",
-      "type": "stat",
-      "description": "",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "gridPos": {
-        "x": 6,
-        "y": 23,
-        "w": 6,
-        "h": 5
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "dora_open_incidents{origin=\"synthetic\"}",
-          "instant": true,
-          "legendFormat": "{{name}}{{service}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "noValue": "Sem observações",
-          "color": {
-            "mode": "palette-classic"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "value",
-        "graphMode": "none"
-      }
-    },
-    {
-      "id": 15,
-      "title": "Deploys sintéticos ao longo da demo",
-      "type": "timeseries",
-      "description": "",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "gridPos": {
-        "x": 12,
-        "y": 23,
         "w": 12,
         "h": 7
       },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "targets": [
         {
           "refId": "A",
-          "expr": "dora_deployments_total{origin=\"synthetic\"}",
+          "expr": "argocd_app_info{project=\"dora-lab\",name=\"loja-prod\"} == 1",
           "instant": false,
-          "legendFormat": "{{name}}{{service}}"
+          "legendFormat": "{{health_status}} / {{sync_status}}"
         }
       ],
       "fieldConfig": {
         "defaults": {
+          "min": 0,
+          "max": 1,
           "unit": "short",
-          "noValue": "Sem observações",
-          "color": {
-            "mode": "palette-classic"
-          }
+          "noValue": "Sem observações"
         },
         "overrides": []
       },
@@ -614,6 +327,51 @@
           "displayMode": "list",
           "placement": "bottom"
         }
+      }
+    },
+    {
+      "id": 9,
+      "title": "Tempo observado fora de Healthy (5m, estimativa)",
+      "description": "Soma das amostras 0/1 da recording rule, avaliada a cada 5s, multiplicada por 5. Inclui Progressing e falhas sem impacto no serviço. Não mede MTTR. Lacunas de coleta e atrasos do Argo limitam a estimativa.",
+      "type": "stat",
+      "gridPos": {
+        "x": 12,
+        "y": 15,
+        "w": 12,
+        "h": 7
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum_over_time(lab:argocd_not_healthy[5m]) * 5",
+          "instant": true,
+          "legendFormat": "{{name}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "Sem observações",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none"
       }
     }
   ],

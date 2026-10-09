@@ -6,6 +6,5 @@ case "${1:-argocd}" in
   grafana) exec kubectl --context "$context" -n monitoring port-forward svc/grafana 3000:3000 ;;
   prometheus) exec kubectl --context "$context" -n monitoring port-forward svc/prometheus 9090:9090 ;;
   app) exec kubectl --context "$context" -n production port-forward svc/loja 8081:8080 ;;
-  pushgateway) exec kubectl --context "$context" -n monitoring port-forward svc/pushgateway 9091:9091 ;;
-  *) echo "uso: $0 [argocd|grafana|prometheus|pushgateway|app]" >&2; exit 2 ;;
+  *) echo "uso: $0 [argocd|grafana|prometheus|app]" >&2; exit 2 ;;
 esac

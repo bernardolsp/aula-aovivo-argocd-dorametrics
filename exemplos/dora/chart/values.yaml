@@ -1,3 +1,4 @@
 version: v1
+imageTag: 1.28.0-alpine
 broken: false
 failSync: false

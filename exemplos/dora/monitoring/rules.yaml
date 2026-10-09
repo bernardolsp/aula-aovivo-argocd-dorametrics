@@ -15,15 +15,9 @@ groups:
         expr: lab:argocd_syncs_failed:5m / (lab:argocd_syncs_finished:5m > 0)
       - record: lab:argocd_reconcile_p95_seconds:5m
         expr: histogram_quantile(0.95, sum by (le, namespace, name, project) (rate(argocd_app_reconcile_bucket{project="dora-lab",name="loja-prod"}[5m])))
-  - name: dora-synthetic
-    rules:
-      # Coorte = as entregas dos arquivos de demonstração, sem janela móvel.
-      # Não misturar incidentes da janela atual com deploys de outra janela.
-      - record: lab:dora_change_fail_ratio
-        expr: dora_failed_deployments_total{origin="synthetic"} / (dora_deployments_total{origin="synthetic"} > 0)
-      - record: lab:dora_rework_ratio
-        expr: dora_rework_deployments_total{origin="synthetic"} / (dora_deployments_total{origin="synthetic"} > 0)
-      - record: lab:dora_lead_time_mean_seconds
-        expr: dora_change_lead_time_seconds_sum{origin="synthetic"} / (dora_change_lead_time_seconds_count{origin="synthetic"} > 0)
-      - record: lab:dora_recovery_mean_seconds
-        expr: dora_failed_deployment_recovery_time_seconds_sum{origin="synthetic"} / (dora_failed_deployment_recovery_time_seconds_count{origin="synthetic"} > 0)
+      # 0 = Healthy; 1 = outro estado observado. Série ausente continua ausente.
+      - record: lab:argocd_not_healthy
+        expr: |
+          sum by (namespace, name, project) (argocd_app_info{project="dora-lab",name="loja-prod",health_status!="Healthy"} == 1)
+          or
+          (0 * sum by (namespace, name, project) (argocd_app_info{project="dora-lab",name="loja-prod"} == 1))

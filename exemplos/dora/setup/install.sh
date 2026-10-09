@@ -41,9 +41,8 @@ kubectl --context "$context" -n argocd rollout status statefulset/argocd-applica
 kubectl --context "$context" -n monitoring rollout restart deployment/prometheus deployment/grafana
 kubectl --context "$context" -n monitoring rollout status deployment/prometheus --timeout=300s
 kubectl --context "$context" -n monitoring rollout status deployment/grafana --timeout=300s
-kubectl --context "$context" -n monitoring rollout status deployment/pushgateway --timeout=180s
 
-echo "Pronto: $context. Aplique exemplos/dora/application.yaml após publicar no GitHub."
+echo "Pronto: $context. Aplique exemplos/dora/application.yaml e sincronize loja-prod."
 echo "Argo CD: admin; senha abaixo. Grafana: admin/admin."
 kubectl --context "$context" -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 --decode
 echo
