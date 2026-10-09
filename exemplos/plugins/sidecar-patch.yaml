@@ -1,0 +1,35 @@
+spec:
+  template:
+    spec:
+      containers:
+        - name: plain-manifest
+          image: quay.io/argoproj/argocd:v3.5.1
+          command: [/var/run/argocd/argocd-cmp-server]
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: var-files
+              mountPath: /var/run/argocd
+            - name: plugins
+              mountPath: /home/argocd/cmp-server/plugins
+            - name: plain-manifest-config
+              mountPath: /home/argocd/cmp-server/config/plugin.yaml
+              subPath: plugin.yaml
+            - name: cmp-tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+      volumes:
+        - name: plain-manifest-config
+          configMap:
+            name: plain-manifest-config
+        - name: cmp-tmp
+          emptyDir: {}

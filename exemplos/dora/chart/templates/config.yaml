@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loja-config
+data:
+  default.conf: |
+    server {
+      listen 8080;
+      default_type text/plain;
+      location = /ready {
+        return 200 "processo pronto\n";
+      }
+      location / {
+        {{- if .Values.broken }}
+        return 503 "{{ .Values.version }} - checkout indisponivel\n";
+        {{- else }}
+        return 200 "{{ .Values.version }} - checkout funcionando\n";
+        {{- end }}
+      }
+    }

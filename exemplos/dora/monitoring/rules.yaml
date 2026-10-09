@@ -1,0 +1,29 @@
+groups:
+  - name: argocd-operational
+    rules:
+      # Os nomes deixam explícito: estes são sinais do Argo, não métricas DORA.
+      - record: lab:argocd_syncs_succeeded:5m
+        expr: sum by (namespace, name, project) (increase(argocd_app_sync_total{project="dora-lab",name="loja-prod",dry_run="false",phase="Succeeded"}[5m]))
+      - record: lab:argocd_syncs_finished:5m
+        expr: sum by (namespace, name, project) (increase(argocd_app_sync_total{project="dora-lab",name="loja-prod",dry_run="false",phase=~"Succeeded|Failed|Error"}[5m]))
+      - record: lab:argocd_syncs_failed:5m
+        expr: |
+          sum by (namespace, name, project) (increase(argocd_app_sync_total{project="dora-lab",name="loja-prod",dry_run="false",phase=~"Failed|Error"}[5m]))
+          or
+          (0 * lab:argocd_syncs_finished:5m)
+      - record: lab:argocd_sync_failure_ratio:5m
+        expr: lab:argocd_syncs_failed:5m / (lab:argocd_syncs_finished:5m > 0)
+      - record: lab:argocd_reconcile_p95_seconds:5m
+        expr: histogram_quantile(0.95, sum by (le, namespace, name, project) (rate(argocd_app_reconcile_bucket{project="dora-lab",name="loja-prod"}[5m])))
+  - name: dora-synthetic
+    rules:
+      # Coorte = as entregas dos arquivos de demonstração, sem janela móvel.
+      # Não misturar incidentes da janela atual com deploys de outra janela.
+      - record: lab:dora_change_fail_ratio
+        expr: dora_failed_deployments_total{origin="synthetic"} / (dora_deployments_total{origin="synthetic"} > 0)
+      - record: lab:dora_rework_ratio
+        expr: dora_rework_deployments_total{origin="synthetic"} / (dora_deployments_total{origin="synthetic"} > 0)
+      - record: lab:dora_lead_time_mean_seconds
+        expr: dora_change_lead_time_seconds_sum{origin="synthetic"} / (dora_change_lead_time_seconds_count{origin="synthetic"} > 0)
+      - record: lab:dora_recovery_mean_seconds
+        expr: dora_failed_deployment_recovery_time_seconds_sum{origin="synthetic"} / (dora_failed_deployment_recovery_time_seconds_count{origin="synthetic"} > 0)

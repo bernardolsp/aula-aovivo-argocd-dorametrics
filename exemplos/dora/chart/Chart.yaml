@@ -1,0 +1,5 @@
+apiVersion: v2
+name: loja
+description: Serviço de laboratório para observar uma falha após um sync bem-sucedido
+type: application
+version: 0.1.0

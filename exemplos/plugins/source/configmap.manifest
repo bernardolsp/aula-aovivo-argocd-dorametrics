@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cmp-demo
+data:
+  message: "Este YAML foi entregue ao Argo pelo sidecar CMP."
+  version: v1

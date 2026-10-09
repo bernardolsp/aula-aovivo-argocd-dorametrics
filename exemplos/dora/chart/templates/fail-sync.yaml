@@ -1,0 +1,19 @@
+{{- if .Values.failSync }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: loja-validation
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: fail
+          image: busybox:1.37.0
+          imagePullPolicy: IfNotPresent
+          command: [sh, -c, "echo 'validação rejeitou a mudança antes do deploy'; exit 1"]
+{{- end }}
