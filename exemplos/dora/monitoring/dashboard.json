@@ -615,21 +615,6 @@
           "placement": "bottom"
         }
       }
-    },
-    {
-      "id": 16,
-      "title": "Não transforme o laboratório em ranking",
-      "type": "text",
-      "gridPos": {
-        "x": 0,
-        "y": 30,
-        "w": 24,
-        "h": 3
-      },
-      "options": {
-        "mode": "markdown",
-        "content": "Compare um serviço com seu próprio histórico. Os arquivos são um exemplo do contrato de dados. Repetir a geração substitui os valores; o Pushgateway não guarda uma linha do tempo de eventos e não calcula DORA."
-      }
     }
   ],
   "templating": {
