@@ -1,4 +1,4 @@
-version: v1
+version: v2-broken
 imageTag: 1.28.0-alpine
-broken: false
+broken: true
 failSync: false
