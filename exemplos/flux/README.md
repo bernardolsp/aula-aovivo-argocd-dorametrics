@@ -78,8 +78,78 @@ As anotações PreSync do chart pertencem ao Argo; `failSync` fica false neste
 exemplo. Reabra o port-forward se o pod escolhido tiver sido substituído.
 Restaure os valores iniciais ao terminar. A limpeza do Kind remove ambos os labs.
 
+## Dependências e health checks
+
+`spec.dependsOn` permite aguardar outros recursos de reconciliação ficarem
+Ready. Em uma `Kustomization`, as dependências são outras Kustomizations;
+em um `HelmRelease`, são outros HelmReleases.
+
+Exemplo de trechos para duas Kustomizations no mesmo namespace: `infra`
+instala um controller e seus CRDs; `apps` aplica os recursos que usam esses CRDs.
+
+```yaml
+# Na Kustomization apps:
+spec:
+  dependsOn:
+    - name: infra
+```
+
+```yaml
+# Na Kustomization infra:
+spec:
+  wait: true
+  timeout: 2m
+```
+
+A dependência precisa ter health checks adequados: sem eles, Ready pode
+significar apenas que os manifests foram aplicados. `wait: true` verifica
+todos os recursos reconciliados; `healthChecks` seleciona recursos específicos.
+Quando wait é true, a lista healthChecks é ignorada. Evite dependências circulares.
+
+Neste lab, uma opção seria acrescentar este trecho ao `spec` de `sync.yaml`:
+
+```yaml
+healthChecks:
+  - apiVersion: helm.toolkit.fluxcd.io/v2
+    kind: HelmRelease
+    name: loja-flux
+    namespace: flux-demo
+timeout: 2m
+```
+
+Assim, a Kustomization também esperaria o HelmRelease ficar Ready. O exemplo
+mantém as condições separadas para observar cada controller. Esses checks
+também não detectam o checkout 503 com readiness 200.
+
+## Flux bootstrap
+
+`flux bootstrap github` instala os controllers, faz commit/push dos manifests
+de instalação e configura a sincronização de uma pasta do Git. A partir daí,
+o Flux reconcilia também sua própria instalação. O script deste lab instala
+uma versão fixa; a source e o sync acompanham somente a pasta de aplicações.
+
+Exemplo para outro Kind e um repositório de sua conta, usando a CLI do Flux:
+
+```bash
+flux bootstrap github \
+  --context=kind-meu-cluster \
+  --owner=SEU_USUARIO \
+  --repository=flux-gitops \
+  --branch=main \
+  --path=clusters/meu-cluster \
+  --personal
+```
+
+O comando requer acesso administrativo ao cluster e ao repositório, e um PAT
+do GitHub (via GITHUB_TOKEN ou prompt). Por padrão, configura uma deploy key
+SSH; com `--token-auth`, usa HTTPS e armazena o PAT em um Secret no cluster.
+Se o repositório não existir, pode criá-lo. É uma alternativa de setup para
+um novo ambiente; a demo atual continua usando o instalador simples.
+
 ## Referências
 
 - [Componentes do Flux](https://fluxcd.io/flux/components/)
 - [HelmRelease e remediação](https://fluxcd.io/flux/components/helm/helmreleases/)
 - [HelmChart e estratégia Revision](https://fluxcd.io/flux/components/source/helmcharts/)
+- [Kustomization: dependências e health checks](https://fluxcd.io/flux/components/kustomize/kustomizations/)
+- [Bootstrap no GitHub](https://fluxcd.io/flux/installation/bootstrap/github/)
