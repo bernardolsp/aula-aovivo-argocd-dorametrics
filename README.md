@@ -1,4 +1,4 @@
-# Argo CD — métricas e cenários de sucesso/falha
+# Argo CD — métricas e comparação com Flux
 
 Kind, Argo CD, Nginx, Prometheus e Grafana. As métricas vêm do Argo CD;
 o HTTP da aplicação permite comparar o estado do controller com o serviço.
@@ -93,6 +93,12 @@ make check check-rules
 ```
 
 `CLUSTER_NAME` altera o nome do cluster nos scripts.
+
+## Flux
+
+O [exemplo de Flux](exemplos/flux/README.md) usa o mesmo Kind e chart, com
+`GitRepository`, `Kustomization` e `HelmRelease`. A aplicação fica em `flux-demo`.
+Inclui upgrade, rollback após falha e recuperação pelo Git.
 
 ## Referências
 

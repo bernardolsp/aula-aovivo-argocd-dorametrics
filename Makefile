@@ -1,7 +1,8 @@
 .PHONY: check render check-rules
 
 check: render
-	@for script in exemplos/dora/setup/*.sh; do bash -n "$$script" || exit; done
+	@for script in exemplos/dora/setup/*.sh exemplos/flux/install.sh; do bash -n "$$script" || exit; done
+	kubectl kustomize exemplos/flux/apps >/dev/null
 
 render:
 	helm template loja exemplos/dora/chart >/dev/null

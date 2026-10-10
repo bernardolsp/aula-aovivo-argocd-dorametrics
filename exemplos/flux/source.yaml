@@ -1,0 +1,10 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: loja-flux
+  namespace: flux-system
+spec:
+  interval: 30s
+  url: https://github.com/bernardolsp/aula-aovivo-argocd-dorametrics.git
+  ref:
+    branch: main
